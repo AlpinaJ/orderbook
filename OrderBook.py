@@ -1,4 +1,4 @@
-from Order import  Order
+from Order import Order
 from collections import defaultdict
 from Trade import Trade
 
@@ -9,11 +9,11 @@ class OrderBook(object):
         # map price:list of order numbers
         self.asks = defaultdict(list)
         self.bids = defaultdict(list)
-        # need for decreasing volume in mathces
-        self.orderds = defaultdict(int)
+        # need for decreasing volume in matches
+        self.orders = defaultdict(int)
 
     def revoke(self, orderno, buysell) -> None:
-        self.orderds.pop(orderno)
+        self.orders.pop(orderno)
         flag = 0
         if buysell == 'S':
             for key, value in self.asks.items():
@@ -44,15 +44,15 @@ class OrderBook(object):
                     break
 
     def post(self, order: Order) -> None:
-        self.orderds.setdefault(order.orderno, order.volume)
+        self.orders.setdefault(order.orderno, order.volume)
         if order.buysell == 'B':
             self.bids[order.price].append(order.orderno)
         else:
             self.asks[order.price].append(order.orderno)
 
     def decrease_order_volume(self, orderno, delta_volume, buysell):
-        self.orderds[orderno] = self.orderds[orderno] - delta_volume
-        if self.orderds[orderno] == 0:
+        self.orders[orderno] = self.orders[orderno] - delta_volume
+        if self.orders[orderno] == 0:
             self.revoke(orderno, buysell)
 
     def match(self, trade: Trade) -> None:
@@ -65,7 +65,7 @@ class OrderBook(object):
 
 
     def print_debug(self):
-        print("orders:", self.orderds)
+        print("orders:", self.orders)
         print("asks:", self.asks)
         print("bids", self.bids)
         print("-----------------------")
