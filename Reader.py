@@ -11,6 +11,7 @@ class Reader(object):
         self.orderbook = OrderBook(seccode)
         self.matched_tradenos = []
         self.collisions = 0
+        print(date, "\n")
         pass
 
     def read_file(self):
