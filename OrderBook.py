@@ -18,7 +18,7 @@ class OrderBook(object):
         if buysell == 'S':
             for key, value in self.asks.items():
                 for i in value:
-                    if i is orderno:
+                    if i == orderno:
                         if len(self.asks[key]) < 2:
                             self.asks.pop(key)
                             flag = 1
@@ -32,7 +32,7 @@ class OrderBook(object):
         if buysell == 'B':
             for key, value in self.bids.items():
                 for i in value:
-                    if i is orderno:
+                    if i == orderno:
                         if len(self.bids[key]) < 2:
                             self.bids.pop(key)
                             flag = 1
@@ -42,6 +42,7 @@ class OrderBook(object):
                             flag = 1
                 if flag == 1:
                     break
+        #self.print_debug()
 
     def post(self, order: Order) -> None:
         self.orders.setdefault(order.orderno, order.volume)
@@ -49,6 +50,7 @@ class OrderBook(object):
             self.bids[order.price].append(order.orderno)
         else:
             self.asks[order.price].append(order.orderno)
+        #self.print_debug()
 
     def decrease_order_volume(self, orderno, delta_volume, buysell):
         self.orders[orderno] = self.orders[orderno] - delta_volume
@@ -62,14 +64,20 @@ class OrderBook(object):
 
         self.decrease_order_volume(buyer, trade_volume, 'B')
         self.decrease_order_volume(seller, trade_volume, 'S')
+        self.print_debug()
 
+    def collision(self) -> int:
+        if len(self.asks.keys())>0 and len (self.bids.keys())>0 and min(self.asks.keys())<max(self.bids.keys()):
+            print("collision")
+            return 1
+        else:
+            return 0
 
     def print_debug(self):
         print("orders:", self.orders)
         print("asks:", self.asks)
         print("bids", self.bids)
         print("-----------------------")
-
 
 
 if __name__ == '__main__':
@@ -101,5 +109,3 @@ if __name__ == '__main__':
     #
     # Book.revoke(1, 'B')
     # Book.print_debug()
-
-

@@ -8,7 +8,7 @@ from collections import defaultdict
 if __name__ == '__main__':
 
     date = "201803"
-    for i in range(1, 31):
+    for i in [1,2,5,6,7,9,12,13,14,15,16,19,20,21,22,23,26,27,28,29,30]:
         zero = ""
         if i < 10:
             zero = "0"
@@ -27,7 +27,7 @@ if __name__ == '__main__':
         ord = r.orderbook
 
     date = "201804"
-    for i in range(2, 31):
+    for i in [2,3,4,5,6,9,10,11,12,13,16,17,18,19,20,23,24,25,26,27,28,30]:
         zero = ""
         if i < 10:
             zero = "0"
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         ord = r.orderbook
 
     date = "201805"
-    for i in range(2, 32):
+    for i in [2,3,4,7,8,10,11,14,15,16,17,18,21,22,23,24,25,28,29,30,31]:
         zero = ""
         if i < 10:
             zero = "0"
