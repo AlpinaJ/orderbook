@@ -81,10 +81,11 @@ class OrderBook(object):
             return 0
 
     def print_debug(self):
-        print("orders:", self.orders)
-        print("asks:", self.asks)
-        print("bids", self.bids)
-        print("-----------------------")
+        # print("orders:", self.orders)
+        # print("asks:", self.asks)
+        # print("bids", self.bids)
+        # print("-----------------------")
+        pass
 
 
 if __name__ == '__main__':

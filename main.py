@@ -1,70 +1,50 @@
-import enum
-import queue
-import time
-from Reader import Reader
-from collections import defaultdict
+import pandas as pd
+from OrderBook import OrderBook
+from Order import Order
+
+BATCH_SIZE = 64
+
+
+def read_batch(path, batch_size):
+    print(f"Start reading {path}")
+    for chunk in pd.read_csv(path, chunksize=batch_size):
+        for row in chunk.itertuples():
+            order = Order(no=row.NO,
+                          seccode=row.SECCODE,
+                          buysell=row.BUYSELL,
+                          time=row.TIME,
+                          orderno=row.ORDERNO,
+                          action=row.ACTION,
+                          price=row.PRICE,
+                          volume=row.VOLUME,
+                          tradeno=row.TRADENO,
+                          tradeprice=row.TRADEPRICE)
+            if order.orderno % 100000 == 0:
+                print(f"Processed {order.orderno} orders...")
+            yield order
+
+    print(f"No more rows in {path}")
+
+
+def process_single_orderlog(path, seccode):
+    orderbook = OrderBook(seccode=seccode)
+
+    for order in read_batch(path=path,
+                            batch_size=BATCH_SIZE):
+        orderbook.post(order)
+
+    print(f"Finished with reading {path}")
+
+
+def process_all_orderlogs(path_to_folder) -> None:
+    """
+    Проходимся по папке с ордерлогами и вызываем "process_single_orderlog" на каждом ордерлоге
+    :param path_to_folder: путь до папки с ордерлогами (и|или) трейдлогами
+    """
+    # TODO написать
+    pass
+
 
 if __name__ == '__main__':
-    date = "201803"
-    # for i in [1,2,5,6,7,9,12,13,14,15,16,19,20,21,22,23,26,27,28,29,30]:
-    for i in [1]:
-        zero = ""
-        if i < 10:
-            zero = "0"
-        date_i = date + zero + str(i)
-        r = Reader(date_i, "USD000000TOD")
-        r.read_file()
-        ord = r.orderbook
-        r = Reader(date_i, "USD000UTSTOM")
-        r.read_file()
-        ord = r.orderbook
-        r = Reader(date_i, "EUR_RUB__TOD")
-        r.read_file()
-        ord = r.orderbook
-        r = Reader(date_i, "EUR_RUB__TOM")
-        r.read_file()
-        ord = r.orderbook
-        r = Reader(date_i, "EURUSD000TOD")
-        r.read_file()
-        ord = r.orderbook
-        r = Reader(date_i, "EURUSD000TOM")
-        r.read_file()
-        ord = r.orderbook
-
-    # date = "201804"
-    # for i in [2,3,4,5,6,9,10,11,12,13,16,17,18,19,20,23,24,25,26,27,28,30]:
-    #     zero = ""
-    #     if i < 10:
-    #         zero = "0"
-    #     date_i = date + zero + str(i)
-    #     r = Reader(date_i, "USD000000TOD")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "USD000UTSTOM")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EUR_RUB__TOD")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EUR_RUB__TOM")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EURUSD000TOD")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EURUSD000TOM")
-    #     ord = r.orderbook
-    #
-    # date = "201805"
-    # for i in [2,3,4,7,8,10,11,14,15,16,17,18,21,22,23,24,25,28,29,30,31]:
-    #     zero = ""
-    #     if i < 10:
-    #         zero = "0"
-    #     date_i = date + zero + str(i)
-    #     r = Reader(date_i, "USD000000TOD")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "USD000UTSTOM")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EUR_RUB__TOD")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EUR_RUB__TOM")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EURUSD000TOD")
-    #     ord = r.orderbook
-    #     r = Reader(date_i, "EURUSD000TOM")
-    #     ord = r.orderbook
+    # process_all_orderlogs("folder")
+    process_single_orderlog(path="input/OrderLog20180301.txt", seccode="USD")
