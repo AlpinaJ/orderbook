@@ -4,7 +4,7 @@ from Order import Order
 from collections import defaultdict
 from Trade import Trade
 
-BATCH_SIZE = 64
+BATCH_SIZE = 1000000
 
 
 def read_batch(path, batch_size):
@@ -32,6 +32,7 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
     orderbook = OrderBook(seccode=seccode)
     trades = defaultdict(Trade)
     trades = process_tradelogs(tradepath)
+    processed_trades= []
 
     for order in read_batch(path=path,
                             batch_size=BATCH_SIZE):
@@ -49,7 +50,11 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
                 orderbook.post(order)
             else:
                 if order.action == 2:
-                    orderbook.match(trades[order.tradeno])
+                    if order.tradeno in processed_trades:
+                        continue
+                    else:
+                        orderbook.match(trades[order.tradeno])
+                        processed_trades.append(order.tradeno)
 
     asks_keys = sorted(orderbook.asks.keys())
     bids_keys = sorted(orderbook.bids.keys())
@@ -58,6 +63,7 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
     file = open(outputpath, "a")
     file.write(string)
 
+    # print(orderbook.asks)
     for price in asks_keys:
         total_volume = 0
         if orderbook.asks[price] is not None:
