@@ -131,4 +131,4 @@ if __name__ == '__main__':
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-    # process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD",tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
+    #process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD",tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
