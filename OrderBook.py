@@ -63,7 +63,7 @@ class OrderBook(object):
             if self.asks[order.price] is None:
                 self.asks[order.price] = []
             self.asks[order.price].append(order.orderno)
-        self.print_debug()
+        #self.print_debug()
 
     def decrease_order_volume(self, orderno, delta_volume, buysell):
         self.orders[orderno] = self.orders[orderno] - delta_volume
@@ -79,19 +79,48 @@ class OrderBook(object):
 
         self.decrease_order_volume(buyer, trade_volume, 'B')
         self.decrease_order_volume(seller, trade_volume, 'S')
-        self.print_debug()
+
+        #self.print_debug()
 
     def collision(self) -> int:
 
         # if len(self.asks.keys()):
         #     print(min(self.asks.keys()))
         if len(self.asks.keys()) > 0 and len(self.bids.keys()) > 0 and min(self.asks.keys()) < max(self.bids.keys()):
-            print("collision")
-            print(min(self.asks.keys()))
-            print(max(self.bids.keys()))
             return 1
         else:
             return 0
+
+    def spectrum(self):
+
+        if self.bids.keys().__len__() == 0 or self.asks.keys().__len__() == 0:
+            return []
+
+        spectrum = []
+        price_step = 1 #0.0025
+        depth = 10
+
+        best_bid = max(self.bids.keys())
+        current_price = best_bid
+        for i in range(depth):
+            volume = 0
+            if self.bids[current_price] is not None:
+                for ordernumber in self.bids[current_price]:
+                    volume += self.orders[ordernumber]
+            spectrum.append(volume)
+            current_price -= price_step
+
+        best_ask = min(self.asks.keys())
+        current_price = best_ask
+        for i in range(depth):
+            volume = 0
+            if self.asks[current_price] is not None:
+                for ordernumber in self.asks[current_price]:
+                    volume += self.orders[ordernumber]
+            spectrum.append(volume)
+            current_price += price_step
+
+        return spectrum
 
     def print_debug(self):
         # print("orders:", self.orders)

@@ -32,35 +32,49 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
     orderbook = OrderBook(seccode=seccode)
     trades = defaultdict(Trade)
     trades = process_tradelogs(tradepath)
-    processed_trades= []
+    processed_trades = []
 
     for order in read_batch(path=path,
                             batch_size=BATCH_SIZE):
+
         if order.time >= 235000000000:
             break
+
         if order.seccode != seccode:
             continue
+
+        file = open(outputpath, "a")
         if orderbook.current_timestamp < order.time:
             orderbook.collisions += orderbook.collision()
+            spectrum = orderbook.spectrum()
+            if len(spectrum) != 0:
+                string = str(orderbook.current_timestamp) + '\n'
+                string += "Bid spectrum:"
+                for i in range(len(spectrum)//2):
+                    string += " " + str(spectrum[i])
+                string += '\n'
+                string += "Ask spectrum:"
+                for i in range(len(spectrum)//2, len(spectrum)):
+                    string += " " + str(spectrum[i])
+                string += '\n'
+                file.write(string)
             orderbook.current_timestamp = order.time
+
         if order.action == 0:
             orderbook.revoke(order.orderno, order.buysell)
-        else:
-            if order.action == 1:
-                orderbook.post(order)
+        elif order.action == 1:
+            orderbook.post(order)
+        elif order.action == 2:
+            if order.tradeno in processed_trades:
+                continue
             else:
-                if order.action == 2:
-                    if order.tradeno in processed_trades:
-                        continue
-                    else:
-                        orderbook.match(trades[order.tradeno])
-                        processed_trades.append(order.tradeno)
+                orderbook.match(trades[order.tradeno])
+                processed_trades.append(order.tradeno)
 
     asks_keys = sorted(orderbook.asks.keys())
     bids_keys = sorted(orderbook.bids.keys())
 
     string = "Number of collisions is " + str(orderbook.collisions) + "\nAsks\n"
-    file = open(outputpath, "a")
     file.write(string)
 
     # print(orderbook.asks)
@@ -99,6 +113,7 @@ def process_tradelogs(path):
 
 
 if __name__ == '__main__':
+    """
     march_dates = ["01", "02", "05", "06", "07", "09", "12", "13", "14", "15", "16", "19", "20", "21", "22", "23", "26",
                    "27", "28", "29", "30"]
     april_dates = ["02", "03", "04", "05", "06", "09", "10", "11", "12", "13", "16", "17", "18", "20", "23", "24",
@@ -131,4 +146,5 @@ if __name__ == '__main__':
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-    #process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD",tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
+    """
+    process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
