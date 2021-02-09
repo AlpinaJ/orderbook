@@ -67,8 +67,10 @@ class OrderBook(object):
 
     def decrease_order_volume(self, orderno, delta_volume, buysell):
         self.orders[orderno] = self.orders[orderno] - delta_volume
-        if self.orders[orderno] == 0:
+        if self.orders[orderno] <= 0:
             self.revoke(orderno, buysell)
+        # if self.orders[orderno] <0:
+        #     self.collisions += 1
 
     def match(self, trade: Trade) -> None:
         buyer = trade.buyorderno
@@ -81,6 +83,9 @@ class OrderBook(object):
         #self.print_debug()
 
     def collision(self) -> int:
+
+        # if len(self.asks.keys()):
+        #     print(min(self.asks.keys()))
         if len(self.asks.keys()) > 0 and len(self.bids.keys()) > 0 and min(self.asks.keys()) < max(self.bids.keys()):
             return 1
         else:
