@@ -56,12 +56,8 @@ class OrderBook(object):
         self.print_debug()
         self.orders.setdefault(order.orderno, order.volume)
         if order.buysell == 'B':
-            if self.bids[order.price] is None:
-                self.bids[order.price] = []
             self.bids[order.price].append(order.orderno)
-        else:
-            if self.asks[order.price] is None:
-                self.asks[order.price] = []
+        if order.buysell == 'S':
             self.asks[order.price].append(order.orderno)
         #self.print_debug()
 
@@ -102,19 +98,23 @@ class OrderBook(object):
 
         best_bid = max(self.bids.keys())
         current_price = best_bid
+
         for i in range(depth):
             volume = 0
-            if self.bids[current_price] is not None:
+            if current_price in self.bids:
                 for ordernumber in self.bids[current_price]:
                     volume += self.orders[ordernumber]
             spectrum.append(volume)
             current_price -= price_step
 
+
+
+
         best_ask = min(self.asks.keys())
         current_price = best_ask
         for i in range(depth):
             volume = 0
-            if self.asks[current_price] is not None:
+            if current_price in self.asks:
                 for ordernumber in self.asks[current_price]:
                     volume += self.orders[ordernumber]
             spectrum.append(volume)

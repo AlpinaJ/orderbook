@@ -78,6 +78,8 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
     file.write(string)
 
     # print(orderbook.asks)
+    # print(orderbook.asks)
+    # print(asks_keys)
     for price in asks_keys:
         total_volume = 0
         if orderbook.asks[price] is not None:
@@ -123,23 +125,19 @@ if __name__ == '__main__':
     seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM","EURUSD000TOD", "EURUSD000TOM"]
     #process_single_orderlog(path="input/OrderLog1.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt",
                            # outputpath="output/test.txt")
-
     date = "20180"
-
     for i in march_dates:
         for sec in seccodes:
             curr_date = date+"3"+i
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-
     for i in april_dates:
         for sec in seccodes:
             curr_date = date+"4"+i
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-
     for i in may_dates:
         for sec in seccodes:
             curr_date = date+"5"+i
