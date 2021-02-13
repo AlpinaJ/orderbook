@@ -47,17 +47,18 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
         if orderbook.current_timestamp < order.time:
             orderbook.collisions += orderbook.collision()
             spectrum = orderbook.spectrum()
-            if len(spectrum) != 0:
-                string = str(orderbook.current_timestamp) + '\n'
-                string += "Bid spectrum:"
-                for i in range(len(spectrum)//2):
-                    string += " " + str(spectrum[i])
-                string += '\n'
-                string += "Ask spectrum:"
-                for i in range(len(spectrum)//2, len(spectrum)):
-                    string += " " + str(spectrum[i])
-                string += '\n'
-                file.write(string)
+            bids_spectrum = spectrum[0]
+            asks_spectrum = spectrum[1]
+            string = str(orderbook.current_timestamp) + '\n'
+            string += "Bids spectrum:"
+            for i in range(len(bids_spectrum)):
+                string += " " + str(bids_spectrum[i])
+            string += '\n'
+            string += "Asks spectrum:"
+            for i in range(len(asks_spectrum)):
+                string += " " + str(asks_spectrum[i])
+            string += '\n'
+            file.write(string)
             orderbook.current_timestamp = order.time
 
         if order.action == 0:
@@ -125,6 +126,7 @@ if __name__ == '__main__':
     seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM","EURUSD000TOD", "EURUSD000TOM"]
     #process_single_orderlog(path="input/OrderLog1.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt",
                            # outputpath="output/test.txt")
+    """
     date = "20180"
     for i in march_dates:
         for sec in seccodes:
@@ -145,4 +147,5 @@ if __name__ == '__main__':
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
 
-    #process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
+    """
+    process_single_orderlog(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/spectrum.txt")
