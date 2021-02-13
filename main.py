@@ -124,8 +124,7 @@ if __name__ == '__main__':
     may_dates = ["02", "03", "04", "07", "08", "10", "11", "14", "15", "16", "17", "18", "21", "22", "23", "24",
                    "25", "28", "29", "30", "31"]
     seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM","EURUSD000TOD", "EURUSD000TOM"]
-    #process_single_orderlog(path="input/OrderLog1.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt",
-                           # outputpath="output/test.txt")
+
     """
     date = "20180"
     for i in march_dates:
@@ -148,4 +147,5 @@ if __name__ == '__main__':
                                     outputpath="output/"+curr_date +sec+".txt" )
 
     """
-    process_single_orderlog(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/spectrum.txt")
+    for sec in seccodes:
+        process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt", outputpath="output/spectrum.txt")
