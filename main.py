@@ -148,4 +148,4 @@ if __name__ == '__main__':
 
     """
     for sec in seccodes:
-        process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt", outputpath="output/spectrum.txt")
+        process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt", outputpath="output/" +sec+"spectrum.txt")
