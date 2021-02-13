@@ -12,6 +12,7 @@ class OrderBook(object):
         # need for decreasing volume in matches
         self.orders = defaultdict(int)
         self.collisions = 0
+        self.matches = 0
         self.current_timestamp = 0
 
     def revoke(self, orderno, buysell) -> None:
@@ -30,8 +31,8 @@ class OrderBook(object):
                                 self.asks.pop(key)
                                 flag = 1
                             else:
-                                new_value = value.remove(i)
-                                self.asks[key] = new_value
+                                value.remove(i)
+                                self.asks[key] = value
                                 flag = 1
                     if flag == 1:
                         break
@@ -45,8 +46,7 @@ class OrderBook(object):
                                 self.bids.pop(key)
                                 flag = 1
                             else:
-                                new_value = value.remove(i)
-                                self.bids[key] = new_value
+                                value.remove(i)
                                 flag = 1
                     if flag == 1:
                         break
@@ -72,6 +72,7 @@ class OrderBook(object):
         buyer = trade.buyorderno
         seller = trade.sellorderno
         trade_volume = trade.volume
+        self.matches += 1
 
         self.decrease_order_volume(buyer, trade_volume, 'B')
         self.decrease_order_volume(seller, trade_volume, 'S')
@@ -82,7 +83,7 @@ class OrderBook(object):
 
         # if len(self.asks.keys()):
         #     print(min(self.asks.keys()))
-        if len(self.asks.keys()) > 0 and len(self.bids.keys()) > 0 and min(self.asks.keys()) < max(self.bids.keys()):
+        if len(self.asks.keys()) > 0 and len(self.bids.keys()) > 0 and min(self.asks.keys()) <= max(self.bids.keys()):
             return 1
         else:
             return 0

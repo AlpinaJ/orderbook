@@ -70,11 +70,12 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
             else:
                 orderbook.match(trades[order.tradeno])
                 processed_trades.append(order.tradeno)
+                orderbook.collisions -= 1
 
     asks_keys = sorted(orderbook.asks.keys())
     bids_keys = sorted(orderbook.bids.keys())
 
-    string = "Number of collisions is " + str(orderbook.collisions) + "\nAsks\n"
+    string = "Number of collisions is " + str(orderbook.collisions-orderbook.matches) + "\nAsks\n"
     file.write(string)
 
     # print(orderbook.asks)
@@ -115,11 +116,10 @@ def process_tradelogs(path):
 
 
 if __name__ == '__main__':
-    """
     march_dates = ["01", "02", "05", "06", "07", "09", "12", "13", "14", "15", "16", "19", "20", "21", "22", "23", "26",
                    "27", "28", "29", "30"]
     april_dates = ["02", "03", "04", "05", "06", "09", "10", "11", "12", "13", "16", "17", "18", "20", "23", "24",
-                   "25", "26", "27","28", "30"]
+                   "25", "26    ", "27","28", "30"]
     may_dates = ["02", "03", "04", "07", "08", "10", "11", "14", "15", "16", "17", "18", "21", "22", "23", "24",
                    "25", "28", "29", "30", "31"]
     seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM","EURUSD000TOD", "EURUSD000TOM"]
@@ -144,5 +144,5 @@ if __name__ == '__main__':
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-    """
-    process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
+
+    #process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
