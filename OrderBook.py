@@ -108,6 +108,7 @@ class OrderBook(object):
                 bids_spectrum.append(volume)
                 total_bids_volume += volume
                 current_price -= price_step
+                current_price = int((current_price + 0.00003) * 10000) / 10000
 
             five_step_volume = 0
             for i in range(len(bids_spectrum)):
@@ -131,6 +132,7 @@ class OrderBook(object):
                 asks_spectrum.append(volume)
                 total_asks_volume += volume
                 current_price += price_step
+                current_price = int((current_price + 0.00003) * 10000) / 10000
 
             five_step_volume = 0
             for i in range(len(asks_spectrum)):

@@ -44,7 +44,6 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
         if order.seccode != seccode:
             continue
 
-
         if orderbook.current_timestamp < order.time:
             orderbook.collisions += orderbook.collision()
             spectrum = orderbook.spectrum()
@@ -148,5 +147,5 @@ if __name__ == '__main__':
                                     outputpath="output/"+curr_date +sec+".txt" )
 
     """
-    # for sec in seccodes:
-    process_single_orderlog(path="input/OrderLog10.txt", seccode="USD000000TOD", tradepath="input/TradeLog10.txt", outputpath="output/" +"USD000000TOD"+"spectrum.txt")
+    
+    process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
