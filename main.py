@@ -80,9 +80,9 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
     string = "Number of collisions is " + str(orderbook.collisions-orderbook.matches) + "\nAsks\n"
     file.write(string)
 
-    # print(orderbook.asks)
-    # print(orderbook.asks)
-    # print(asks_keys)
+    print(orderbook.asks)
+    print(orderbook.asks)
+    print(asks_keys)
     for price in asks_keys:
         total_volume = 0
         if orderbook.asks[price] is not None:
