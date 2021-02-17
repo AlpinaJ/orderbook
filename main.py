@@ -47,17 +47,18 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
         if orderbook.current_timestamp < order.time:
             orderbook.collisions += orderbook.collision()
             spectrum = orderbook.spectrum()
-            if len(spectrum) != 0:
-                string = str(orderbook.current_timestamp) + '\n'
-                string += "Bid spectrum:"
-                for i in range(len(spectrum)//2):
-                    string += " " + str(spectrum[i])
-                string += '\n'
-                string += "Ask spectrum:"
-                for i in range(len(spectrum)//2, len(spectrum)):
-                    string += " " + str(spectrum[i])
-                string += '\n'
-                file.write(string)
+            bids_spectrum = spectrum[0]
+            asks_spectrum = spectrum[1]
+            string = str(orderbook.current_timestamp) + '\n'
+            string += "Bids spectrum:"
+            for i in range(len(bids_spectrum)):
+                string += " " + str(bids_spectrum[i])
+            string += '\n'
+            string += "Asks spectrum:"
+            for i in range(len(asks_spectrum)):
+                string += " " + str(asks_spectrum[i])
+            string += '\n'
+            file.write(string)
             orderbook.current_timestamp = order.time
 
         if order.action == 0:
@@ -70,14 +71,17 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
             else:
                 orderbook.match(trades[order.tradeno])
                 processed_trades.append(order.tradeno)
+                orderbook.collisions -= 1
 
     asks_keys = sorted(orderbook.asks.keys())
     bids_keys = sorted(orderbook.bids.keys())
 
-    string = "Number of collisions is " + str(orderbook.collisions) + "\nAsks\n"
+    string = "Number of collisions is " + str(orderbook.collisions-orderbook.matches) + "\nAsks\n"
     file.write(string)
 
-    # print(orderbook.asks)
+    print(orderbook.asks)
+    print(orderbook.asks)
+    print(asks_keys)
     for price in asks_keys:
         total_volume = 0
         if orderbook.asks[price] is not None:
@@ -113,40 +117,35 @@ def process_tradelogs(path):
 
 
 if __name__ == '__main__':
-    """
     march_dates = ["01", "02", "05", "06", "07", "09", "12", "13", "14", "15", "16", "19", "20", "21", "22", "23", "26",
                    "27", "28", "29", "30"]
     april_dates = ["02", "03", "04", "05", "06", "09", "10", "11", "12", "13", "16", "17", "18", "20", "23", "24",
-                   "25", "26", "27","28", "30"]
+                   "25", "26    ", "27","28", "30"]
     may_dates = ["02", "03", "04", "07", "08", "10", "11", "14", "15", "16", "17", "18", "21", "22", "23", "24",
                    "25", "28", "29", "30", "31"]
     seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM","EURUSD000TOD", "EURUSD000TOM"]
-    #process_single_orderlog(path="input/OrderLog1.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt",
-                           # outputpath="output/test.txt")
 
+    """
     date = "20180"
-
     for i in march_dates:
         for sec in seccodes:
             curr_date = date+"3"+i
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-
     for i in april_dates:
         for sec in seccodes:
             curr_date = date+"4"+i
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-
     for i in may_dates:
         for sec in seccodes:
             curr_date = date+"5"+i
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
+
     """
-
+    
     process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
-

@@ -12,6 +12,7 @@ class OrderBook(object):
         # need for decreasing volume in matches
         self.orders = defaultdict(int)
         self.collisions = 0
+        self.matches = 0
         self.current_timestamp = 0
 
     def revoke(self, orderno, buysell) -> None:
@@ -30,8 +31,8 @@ class OrderBook(object):
                                 self.asks.pop(key)
                                 flag = 1
                             else:
-                                new_value = value.remove(i)
-                                self.asks[key] = new_value
+                                value.remove(i)
+                                self.asks[key] = value
                                 flag = 1
                     if flag == 1:
                         break
@@ -45,8 +46,7 @@ class OrderBook(object):
                                 self.bids.pop(key)
                                 flag = 1
                             else:
-                                new_value = value.remove(i)
-                                self.bids[key] = new_value
+                                value.remove(i)
                                 flag = 1
                     if flag == 1:
                         break
@@ -56,24 +56,23 @@ class OrderBook(object):
         self.print_debug()
         self.orders.setdefault(order.orderno, order.volume)
         if order.buysell == 'B':
-            if self.bids[order.price] is None:
-                self.bids[order.price] = []
             self.bids[order.price].append(order.orderno)
-        else:
-            if self.asks[order.price] is None:
-                self.asks[order.price] = []
+        if order.buysell == 'S':
             self.asks[order.price].append(order.orderno)
         #self.print_debug()
 
     def decrease_order_volume(self, orderno, delta_volume, buysell):
         self.orders[orderno] = self.orders[orderno] - delta_volume
-        if self.orders[orderno] == 0:
+        if self.orders[orderno] <= 0:
             self.revoke(orderno, buysell)
+        # if self.orders[orderno] <0:
+        #     self.collisions += 1
 
     def match(self, trade: Trade) -> None:
         buyer = trade.buyorderno
         seller = trade.sellorderno
         trade_volume = trade.volume
+        self.matches += 1
 
         self.decrease_order_volume(buyer, trade_volume, 'B')
         self.decrease_order_volume(seller, trade_volume, 'S')
@@ -85,6 +84,7 @@ class OrderBook(object):
             return 1
         else:
             return 0
+
 
     def spectrum(self):
 
