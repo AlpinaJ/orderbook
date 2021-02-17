@@ -33,6 +33,7 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
     trades = defaultdict(Trade)
     trades = process_tradelogs(tradepath)
     processed_trades = []
+    file = open(outputpath, "a")
 
     for order in read_batch(path=path,
                             batch_size=BATCH_SIZE):
@@ -43,7 +44,6 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
         if order.seccode != seccode:
             continue
 
-        file = open(outputpath, "a")
         if orderbook.current_timestamp < order.time:
             orderbook.collisions += orderbook.collision()
             spectrum = orderbook.spectrum()
@@ -147,4 +147,6 @@ if __name__ == '__main__':
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
     """
+
     process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
+
