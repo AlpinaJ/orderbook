@@ -80,10 +80,7 @@ class OrderBook(object):
         #self.print_debug()
 
     def collision(self) -> int:
-
-        # if len(self.asks.keys()):
-        #     print(min(self.asks.keys()))
-        if len(self.asks.keys()) > 0 and len(self.bids.keys()) > 0 and min(self.asks.keys()) <= max(self.bids.keys()):
+        if len(self.asks.keys()) > 0 and len(self.bids.keys()) > 0 and min(self.asks.keys()) < max(self.bids.keys()):
             return 1
         else:
             return 0
