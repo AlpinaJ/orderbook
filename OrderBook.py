@@ -50,16 +50,13 @@ class OrderBook(object):
                                 flag = 1
                     if flag == 1:
                         break
-        # self.print_debug()
 
     def post(self, order: Order) -> None:
-        self.print_debug()
         self.orders.setdefault(order.orderno, order.volume)
         if order.buysell == 'B':
             self.bids[order.price].append(order.orderno)
         if order.buysell == 'S':
             self.asks[order.price].append(order.orderno)
-        #self.print_debug()
 
     def decrease_order_volume(self, orderno, delta_volume, buysell):
         self.orders[orderno] = self.orders[orderno] - delta_volume
@@ -77,106 +74,33 @@ class OrderBook(object):
         self.decrease_order_volume(buyer, trade_volume, 'B')
         self.decrease_order_volume(seller, trade_volume, 'S')
 
-        #self.print_debug()
-
     def collision(self) -> int:
         if len(self.asks.keys()) > 0 and len(self.bids.keys()) > 0 and min(self.asks.keys()) < max(self.bids.keys()):
             return 1
         else:
             return 0
 
+    def task1(self, file):
 
-    def spectrum(self):
+        asks_keys = sorted(self.asks.keys())
+        bids_keys = sorted(self.bids.keys())
 
-        price_step = 0.0025
-        depth = 50
-        normalized_bids_spectrum = []
-        normalized_asks_spectrum = []
+        string = "Number of collisions is " + str(self.collisions - self.matches) + "\nAsks\n"
+        file.write(string)
 
-        if self.bids.keys().__len__() != 0:
+        for price in asks_keys:
+            total_volume = 0
+            if self.asks[price] is not None:
+                for ordernumber in self.asks[price]:
+                    total_volume += self.orders[ordernumber]
+                s = str(price) + " : " + str(total_volume) + "\n"
+                file.write(s)
 
-            best_bid = max(self.bids.keys())
-            current_price = best_bid
-            bids_spectrum = []
-            total_bids_volume = 0
-
-            for i in range(depth):
-                volume = 0
-                if current_price in self.bids:
-                    for ordernumber in self.bids[current_price]:
-                        volume += self.orders[ordernumber]
-                bids_spectrum.append(volume)
-                total_bids_volume += volume
-                current_price -= price_step
-                current_price = int((current_price + 0.00003) * 10000) / 10000
-
-            five_step_volume = 0
-            for i in range(len(bids_spectrum)):
-                five_step_volume += bids_spectrum[i]
-                if i % 5 == 4:
-                    normalized_bids_spectrum.append(five_step_volume / total_bids_volume)
-                    five_step_volume = 0
-
-        if self.asks.keys().__len__() != 0:
-
-            best_ask = min(self.asks.keys())
-            current_price = best_ask
-            asks_spectrum = []
-            total_asks_volume = 0
-
-            for i in range(depth):
-                volume = 0
-                if current_price in self.asks:
-                    for ordernumber in self.asks[current_price]:
-                        volume += self.orders[ordernumber]
-                asks_spectrum.append(volume)
-                total_asks_volume += volume
-                current_price += price_step
-                current_price = int((current_price + 0.00003) * 10000) / 10000
-
-            five_step_volume = 0
-            for i in range(len(asks_spectrum)):
-                five_step_volume += asks_spectrum[i]
-                if i % 5 == 4:
-                    normalized_asks_spectrum.append(five_step_volume / total_asks_volume)
-                    five_step_volume = 0
-
-        return normalized_bids_spectrum, normalized_asks_spectrum
-
-    def print_debug(self):
-        # print("orders:", self.orders)
-        # print("asks:", self.asks)
-        # print("bids", self.bids)
-        # print("-----------------------")
-        pass
-
-
-if __name__ == '__main__':
-    a = Order(1, 'usdrub', 'B', 1, 1, 1, 67, 2, 0, 0)
-    c = Order(2, 'usdrub', 'S', 1, 2, 1, 65, 4, 0, 0)
-    d = Order(3, 'usdrub', 'B', 1, 3, 1, 66, 1, 0, 0)
-
-    ac = Trade(1, 'usdrub', 10, 1, 2, 65, 2)
-    cd = Trade(1, 'usdrub', 11, 3, 2, 65, 1)
-
-    Book = OrderBook('usdrub')
-
-    Book.post(a)
-    Book.print_debug()
-
-    Book.post(c)
-    Book.print_debug()
-
-    Book.post(d)
-    Book.print_debug()
-
-    Book.match(ac)
-    Book.print_debug()
-
-    Book.match(cd)
-    Book.print_debug()
-    # Book.revoke(2, 'S')
-    # Book.print_debug()
-    #
-    # Book.revoke(1, 'B')
-    # Book.print_debug()
+        file.write("\nBids\n")
+        for price in bids_keys:
+            total_volume = 0
+            if self.bids[price] is not None:
+                for ordernumber in self.bids[price]:
+                    total_volume += self.orders[ordernumber]
+                s = str(price) + " : " + str(total_volume) + "\n"
+                file.write(s)

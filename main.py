@@ -3,6 +3,7 @@ from OrderBook import OrderBook
 from Order import Order
 from collections import defaultdict
 from Trade import Trade
+from Spectrum import Spectrum
 
 BATCH_SIZE = 1000000
 
@@ -30,35 +31,46 @@ def read_batch(path, batch_size):
 
 def process_single_orderlog(path, seccode, tradepath, outputpath):
     orderbook = OrderBook(seccode=seccode)
+    spectrum = Spectrum(orderbook)
+    bid_spectra = []
+    ask_spectra = []
     trades = defaultdict(Trade)
     trades = process_tradelogs(tradepath)
     processed_trades = []
     file = open(outputpath, "a")
+    file.write(seccode + "\n")
 
     for order in read_batch(path=path,
                             batch_size=BATCH_SIZE):
-
-        if order.time >= 235000000000:
-            break
 
         if order.seccode != seccode:
             continue
 
         if orderbook.current_timestamp < order.time:
+
             orderbook.collisions += orderbook.collision()
-            spectrum = orderbook.spectrum()
-            bids_spectrum = spectrum[0]
-            asks_spectrum = spectrum[1]
+
+            current_bid_spectrum = spectrum.calculate_spectrum('B')
+            bid_spectra.append([orderbook.current_timestamp, current_bid_spectrum])
+            current_ask_spectrum = spectrum.calculate_spectrum('S')
+            ask_spectra.append([orderbook.current_timestamp, current_ask_spectrum])
+
+            """
             string = str(orderbook.current_timestamp) + '\n'
             string += "Bids spectrum:"
-            for i in range(len(bids_spectrum)):
-                string += " " + str(bids_spectrum[i])
+            for i in range(len(current_bid_spectrum)):
+                string += " " + str(current_bid_spectrum[i])
             string += '\n'
             string += "Asks spectrum:"
-            for i in range(len(asks_spectrum)):
-                string += " " + str(asks_spectrum[i])
+            for i in range(len(current_ask_spectrum)):
+                string += " " + str(current_ask_spectrum[i])
             string += '\n'
             file.write(string)
+            """
+
+            if order.time >= 235000000000:
+                break
+
             orderbook.current_timestamp = order.time
 
         if order.action == 0:
@@ -73,35 +85,10 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
                 processed_trades.append(order.tradeno)
                 orderbook.collisions -= 1
 
-    asks_keys = sorted(orderbook.asks.keys())
-    bids_keys = sorted(orderbook.bids.keys())
-
-    string = "Number of collisions is " + str(orderbook.collisions-orderbook.matches) + "\nAsks\n"
-    file.write(string)
-
-    print(orderbook.asks)
-    print(orderbook.asks)
-    print(asks_keys)
-    for price in asks_keys:
-        total_volume = 0
-        if orderbook.asks[price] is not None:
-            for ordernumber in orderbook.asks[price]:
-                total_volume += orderbook.orders[ordernumber]
-            s = str(price) + " : " + str(total_volume) + "\n"
-            file.write(s)
-
-    file.write("\nBids\n")
-    for price in bids_keys:
-        total_volume = 0
-        if orderbook.bids[price] is not None:
-            for ordernumber in orderbook.bids[price]:
-                total_volume += orderbook.orders[ordernumber]
-            s = str(price) + " : " + str(total_volume) + "\n"
-            file.write(s)
+    spectrum.task3(bid_spectra, ask_spectra, file)
+    #orderbook.task1(file)
     file.close()
-
     print(f"Finished with reading {path}")
-
 
 
 def process_tradelogs(path):
@@ -147,5 +134,5 @@ if __name__ == '__main__':
                                     outputpath="output/"+curr_date +sec+".txt" )
 
     """
-    
-    process_single_orderlog(path="input/OrderLog10.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog10.txt", outputpath="output/test.txt")
+    for sec in seccodes:
+        process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt", outputpath="output/test.txt")
