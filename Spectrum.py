@@ -91,7 +91,7 @@ class Spectrum(object):
 
         statistical_threshold = sqrt(- 0.5 * log((1 - confidence_level) / 2))
 
-        if sqrt(len(cdf1)) * uniform_dist > statistical_threshold:
+        if sqrt(len(cdf1)/2) * uniform_dist > statistical_threshold:
             return False  # distributions are different
         else:
             return True  # distributions are the same
@@ -155,11 +155,52 @@ class Spectrum(object):
 
         confidence_level = 0.975
 
-        string = "Day" + str(day)+" " + str(self.ks_test(bid_cdf1, bid_cdf2, confidence_level)) + "," + str(
-            self.ks_test(ask_cdf1, ask_cdf2, confidence_level))+" "
+        string = "Day" + str(day) + " " + str(self.ks_test(bid_cdf1, bid_cdf2, confidence_level)) + "," + str(
+            self.ks_test(ask_cdf1, ask_cdf2, confidence_level)) + " "
         string += str(self.ks_test(bid_cdf2, bid_cdf3, confidence_level)) + "," + str(
-            self.ks_test(ask_cdf2, ask_cdf3, confidence_level))+ " "
+            self.ks_test(ask_cdf2, ask_cdf3, confidence_level)) + " "
         string += str(self.ks_test(bid_cdf1, bid_cdf3, confidence_level)) + "," + str(
-            self.ks_test(ask_cdf1, ask_cdf3, confidence_level))+ "\n"
+            self.ks_test(ask_cdf1, ask_cdf3, confidence_level)) + "\n"
 
         file.write(string)
+
+    def task42(self, prev_ask_arr, prev_bid_arr, ask_arr, bid_arr, day):
+        print("42 task")
+
+        bid_spectrum11 = self.avg_by_count(prev_bid_arr[0])
+        bid_cdf11 = self.cdf(bid_spectrum11)
+        bid_spectrum12 = self.avg_by_count(prev_bid_arr[1])
+        bid_cdf12 = self.cdf(bid_spectrum12)
+        bid_spectrum13 = self.avg_by_count(prev_bid_arr[2])
+        bid_cdf13 = self.cdf(bid_spectrum13)
+
+        bid_spectrum21 = self.avg_by_count(bid_arr[0])
+        bid_cdf21 = self.cdf(bid_spectrum21)
+        bid_spectrum22 = self.avg_by_count(bid_arr[1])
+        bid_cdf22 = self.cdf(bid_spectrum22)
+        bid_spectrum23 = self.avg_by_count(bid_arr[2])
+        bid_cdf23 = self.cdf(bid_spectrum23)
+
+        aks_spectrum11 = self.avg_by_count(prev_ask_arr[0])
+        ask_cdf11 = self.cdf(aks_spectrum11)
+        ask_spectrum12 = self.avg_by_count(prev_ask_arr[1])
+        ask_cdf12 = self.cdf(ask_spectrum12)
+        ask_spectrum13 = self.avg_by_count(prev_ask_arr[2])
+        ask_cdf13 = self.cdf(ask_spectrum13)
+
+        ask_spectrum21 = self.avg_by_count(ask_arr[0])
+        ask_cdf21 = self.cdf(ask_spectrum21)
+        ask_spectrum22 = self.avg_by_count(ask_arr[1])
+        ask_cdf22 = self.cdf(ask_spectrum22)
+        ask_spectrum23 = self.avg_by_count(ask_arr[2])
+        ask_cdf23 = self.cdf(ask_spectrum23)
+
+        confidence_level = 0.975
+
+        string = "Day" + str(day) + " " + str(self.ks_test(bid_cdf11, bid_cdf21, confidence_level)) + "," + str(
+            self.ks_test(ask_cdf11, ask_cdf21, confidence_level)) + " "
+        string += str(self.ks_test(bid_cdf12, bid_cdf22, confidence_level)) + "," + str(
+            self.ks_test(ask_cdf12, ask_cdf22, confidence_level)) + " "
+        string += str(self.ks_test(bid_cdf13, bid_cdf23, confidence_level)) + "," + str(
+            self.ks_test(ask_cdf13, ask_cdf23, confidence_level)) + "\n"
+        return string

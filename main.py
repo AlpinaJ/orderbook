@@ -115,6 +115,74 @@ def process_single_orderlog(path, seccode, tradepath, outputpath, day):
     print(f"Finished with reading {path}")
 
 
+def process_single_orderlog_task42(path, seccode, tradepath):
+    orderbook = OrderBook(seccode=seccode)
+    spectrum = Spectrum(orderbook)
+    bid_spectra1 = []
+    ask_spectra1 = []
+    bid_spectra2 = []
+    ask_spectra2 = []
+    bid_spectra3 = []
+    ask_spectra3 = []
+    trades = defaultdict(Trade)
+    trades = process_tradelogs(tradepath)
+    processed_trades = []
+    flag1 = 0
+    flag2 = 0
+
+    for order in read_batch(path=path,
+                            batch_size=BATCH_SIZE):
+
+        if order.seccode != seccode:
+            continue
+
+        if orderbook.current_timestamp < order.time:
+
+            if orderbook.current_timestamp >= 150000000000 and flag1 == 0:
+                flag1 = 1
+
+            if orderbook.current_timestamp >= 190000000000 and flag2 == 0:
+                flag2 = 1
+
+            orderbook.collisions += orderbook.collision()
+
+            current_bid_spectrum = spectrum.calculate_spectrum('B')
+            current_ask_spectrum = spectrum.calculate_spectrum('S')
+
+            if (flag1 == 0):
+                bid_spectra1.append([orderbook.current_timestamp, current_bid_spectrum])
+                ask_spectra1.append([orderbook.current_timestamp, current_ask_spectrum])
+
+            if (flag2 == 0):
+                bid_spectra2.append([orderbook.current_timestamp, current_bid_spectrum])
+                ask_spectra2.append([orderbook.current_timestamp, current_ask_spectrum])
+
+            if (flag2 == 1 and flag1 == 1):
+                bid_spectra3.append([orderbook.current_timestamp, current_bid_spectrum])
+                ask_spectra3.append([orderbook.current_timestamp, current_ask_spectrum])
+
+            if order.time >= 235000000000:
+                break
+
+            orderbook.current_timestamp = order.time
+
+        if order.action == 0:
+            orderbook.revoke(order.orderno, order.buysell)
+        elif order.action == 1:
+            orderbook.post(order)
+        elif order.action == 2:
+            if order.tradeno in processed_trades:
+                continue
+            else:
+                orderbook.match(trades[order.tradeno])
+                processed_trades.append(order.tradeno)
+                orderbook.collisions -= 1
+    print(f"Finished with reading {path}")
+    ask_arr = [ask_spectra1, ask_spectra2, ask_spectra3]
+    bid_arr = [bid_spectra1, bid_spectra2, bid_spectra3]
+    return ask_arr, bid_arr
+
+
 def process_tradelogs(path):
     trades = defaultdict(Trade)
     for chunk in pd.read_csv(path, chunksize=BATCH_SIZE):
@@ -149,15 +217,42 @@ if __name__ == '__main__':
     #     process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt",
     #                             outputpath="output/test.txt", day=1)
     date = "20180"
+    # TASK4.1
+    day = 1
+    for i in dates:
+        for sec in seccodes4:
+            curr_date = date + i
+            process_single_orderlog(path="input/OrderLog" + curr_date + ".txt",
+                                    seccode=sec,
+                                    tradepath="input/TradeLog" + curr_date + ".txt",
+                                    outputpath="output/" + sec + "task4.txt",
+                                    day=day)
+        day += 1
 
-    # TASK 4.1
-    # day = 0
-    # for i in dates:
-    #     for sec in seccodes4:
+
+    # TASK 4.2
+    # for sec in seccodes4:
+    #     day = 1
+    #     prev_ask_arr = []
+    #     prev_bid_arr = []
+    #     orderbook = OrderBook(seccode=sec)
+    #     spectrum = Spectrum(orderbook)
+    #
+    #     for i in dates:
+    #
+    #
     #         curr_date = date + i
-    #         process_single_orderlog(path="input/OrderLog" + curr_date + ".txt",
-    #                                 seccode=sec,
-    #                                 tradepath="input/TradeLog" + curr_date + ".txt",
-    #                                 outputpath="output/" + sec + "task4.txt",
-    #                                 day=day)
-    #     day += 1
+    #         ask_arr, bid_arr = process_single_orderlog_task42(path="input/OrderLog" + curr_date + ".txt",
+    #                                                           seccode=sec,
+    #                                                           tradepath="input/TradeLog" + curr_date + ".txt", )
+    #         if day > 1:
+    #             string = spectrum.task42(prev_ask_arr, prev_bid_arr, ask_arr, bid_arr, day)
+    #             path = "output/task4/" + sec + ".txt"
+    #             file = open(path, "a")
+    #             file.write(string)
+    #             file.close()
+    #         prev_ask_arr = ask_arr
+    #         prev_bid_arr = bid_arr
+    #         day += 1
+
+
