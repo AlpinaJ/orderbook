@@ -1,5 +1,6 @@
 from math import *
 
+
 class Spectrum(object):
 
     def __init__(self, orderbook):
@@ -14,7 +15,8 @@ class Spectrum(object):
 
         normalized_spectrum = []
 
-        if (side == 'B' and self.orderbook.bids.keys().__len__() != 0) or (side == 'S' and self.orderbook.asks.keys().__len__() != 0):
+        if (side == 'B' and self.orderbook.bids.keys().__len__() != 0) or (
+                side == 'S' and self.orderbook.asks.keys().__len__() != 0):
 
             if side == 'B':
                 orders = self.orderbook.bids
@@ -50,7 +52,7 @@ class Spectrum(object):
 
     def avg_by_count(self, spectra):
         avg_by_count_spectrum = []
-        for i in range(self.depth//5):
+        for i in range(self.depth // 5):
             sum = 0
             for j in range(1, len(spectra)):
                 if len(spectra[j][1]) != 0:
@@ -62,11 +64,11 @@ class Spectrum(object):
     def avg_by_time(self, spectra):
         initial_ts = spectra[1][0]
         avg_by_time_spectrum = []
-        for i in range(self.depth//5):
+        for i in range(self.depth // 5):
             weighted_sum = 0
             for j in range(1, len(spectra) - 1):
                 if len(spectra[j][1]) != 0:
-                    weighted_sum += spectra[j][1][i] * (spectra[j+1][0] - spectra[j][0])
+                    weighted_sum += spectra[j][1][i] * (spectra[j + 1][0] - spectra[j][0])
             weighted_sum += spectra[len(spectra) - 1][1][i] * (235000000000 - spectra[len(spectra) - 1][0])
             avg = weighted_sum / (235000000000 - initial_ts)
             avg_by_time_spectrum.append(avg)
@@ -76,7 +78,7 @@ class Spectrum(object):
         cdf = []
         cdf.append(pdf[0])
         for i in range(1, len(pdf)):
-            cdf.append(cdf[i-1] + pdf[i])
+            cdf.append(cdf[i - 1] + pdf[i])
         return cdf
 
     def ks_test(self, cdf1, cdf2, confidence_level):
@@ -111,25 +113,53 @@ class Spectrum(object):
         confidence_level = 0.975
 
         string = ""
+
         string += "avg by count bid cdf: " + str(avg_by_count_bid_cdf) + "\n"
-        string += "avg by time bid cdf: " + str(avg_by_time_bid_cdf) + "\n"
         string += "avg by count ask cdf: " + str(avg_by_count_ask_cdf) + "\n"
-        string += "avg by time ask cdf: " + str(avg_by_time_ask_cdf) + "\n"
+        # string += "avg by time ask cdf: " + str(avg_by_time_ask_cdf) + "\n"
+        # string += "avg by time bid cdf: " + str(avg_by_time_bid_cdf) + "\n"
 
         string += "avg by count: bid distribution vs ask distribution: "
         string += str(self.ks_test(avg_by_count_bid_cdf, avg_by_count_ask_cdf, confidence_level))
         string += "\n"
 
-        string += "avg by time: bid distribution vs ask distribution: "
-        string += str(self.ks_test(avg_by_time_bid_cdf, avg_by_time_ask_cdf, confidence_level))
-        string += "\n"
+        # string += "avg by time: bid distribution vs ask distribution: "
+        # string += str(self.ks_test(avg_by_time_bid_cdf, avg_by_time_ask_cdf, confidence_level))
+        # string += "\n"
 
-        string += "bid distributions: avg by count vs avg by time: "
-        string += str(self.ks_test(avg_by_count_bid_cdf, avg_by_time_bid_cdf, confidence_level))
-        string += "\n"
+        # string += "bid distributions: avg by count vs avg by time: "
+        # string += str(self.ks_test(avg_by_count_bid_cdf, avg_by_time_bid_cdf, confidence_level))
+        # string += "\n"
 
-        string += "ask distributions: avg by count vs avg by time: "
-        string += str(self.ks_test(avg_by_count_ask_cdf, avg_by_time_ask_cdf, confidence_level))
-        string += "\n\n"
+        # string += "ask distributions: avg by count vs avg by time: "
+        # string += str(self.ks_test(avg_by_count_ask_cdf, avg_by_time_ask_cdf, confidence_level))
+        # string += "\n\n"
+
+        file.write(string)
+
+    def task4(self, bid_spectra1, ask_spectra1, bid_spectra2, ask_spectra2, bid_spectra3, ask_spectra3, file, day):
+
+        bid_spectrum1 = self.avg_by_count(bid_spectra1)
+        bid_cdf1 = self.cdf(bid_spectrum1)
+        bid_spectrum2 = self.avg_by_count(bid_spectra2)
+        bid_cdf2 = self.cdf(bid_spectrum2)
+        bid_spectrum3 = self.avg_by_count(bid_spectra3)
+        bid_cdf3 = self.cdf(bid_spectrum3)
+
+        ask_spectrum1 = self.avg_by_count(ask_spectra1)
+        ask_cdf1 = self.cdf(ask_spectrum1)
+        ask_spectrum2 = self.avg_by_count(ask_spectra2)
+        ask_cdf2 = self.cdf(ask_spectrum2)
+        ask_spectrum3 = self.avg_by_count(ask_spectra3)
+        ask_cdf3 = self.cdf(ask_spectrum3)
+
+        confidence_level = 0.975
+
+        string = "Day" + str(day)+" " + str(self.ks_test(bid_cdf1, bid_cdf2, confidence_level)) + "," + str(
+            self.ks_test(ask_cdf1, ask_cdf2, confidence_level))+" "
+        string += str(self.ks_test(bid_cdf2, bid_cdf3, confidence_level)) + "," + str(
+            self.ks_test(ask_cdf2, ask_cdf3, confidence_level))+ " "
+        string += str(self.ks_test(bid_cdf1, bid_cdf3, confidence_level)) + "," + str(
+            self.ks_test(ask_cdf1, ask_cdf3, confidence_level))+ "\n"
 
         file.write(string)

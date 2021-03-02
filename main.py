@@ -22,23 +22,31 @@ def read_batch(path, batch_size):
                           volume=row.VOLUME,
                           tradeno=row.TRADENO,
                           tradeprice=row.TRADEPRICE)
-            if (order.side % 1000000 == 0):
+            if order.side % 1000000 == 0:
                 print(f"Processed {order.side} orders...")
             yield order
 
     print(f"No more rows in {path}")
 
 
-def process_single_orderlog(path, seccode, tradepath, outputpath):
+def process_single_orderlog(path, seccode, tradepath, outputpath, day):
     orderbook = OrderBook(seccode=seccode)
     spectrum = Spectrum(orderbook)
     bid_spectra = []
     ask_spectra = []
+    bid_spectra1 = []
+    ask_spectra1 = []
+    bid_spectra2 = []
+    ask_spectra2 = []
+    bid_spectra3 = []
+    ask_spectra3 = []
     trades = defaultdict(Trade)
     trades = process_tradelogs(tradepath)
     processed_trades = []
     file = open(outputpath, "a")
-    file.write(seccode + "\n")
+    # file.write(seccode + "\n")
+    flag1 = 0
+    flag2 = 0
 
     for order in read_batch(path=path,
                             batch_size=BATCH_SIZE):
@@ -48,13 +56,30 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
 
         if orderbook.current_timestamp < order.time:
 
+            if orderbook.current_timestamp >= 150000000000 and flag1 == 0:
+                flag1 = 1
+
+            if orderbook.current_timestamp >= 190000000000 and flag2 == 0:
+                flag2 = 1
+
             orderbook.collisions += orderbook.collision()
 
             current_bid_spectrum = spectrum.calculate_spectrum('B')
-            bid_spectra.append([orderbook.current_timestamp, current_bid_spectrum])
+            # bid_spectra.append([orderbook.current_timestamp, current_bid_spectrum])
             current_ask_spectrum = spectrum.calculate_spectrum('S')
-            ask_spectra.append([orderbook.current_timestamp, current_ask_spectrum])
+            # ask_spectra.append([orderbook.current_timestamp, current_ask_spectrum])
 
+            if (flag1 == 0):
+                bid_spectra1.append([orderbook.current_timestamp, current_bid_spectrum])
+                ask_spectra1.append([orderbook.current_timestamp, current_ask_spectrum])
+
+            if (flag2 == 0):
+                bid_spectra2.append([orderbook.current_timestamp, current_bid_spectrum])
+                ask_spectra2.append([orderbook.current_timestamp, current_ask_spectrum])
+
+            if (flag2 == 1 and flag1 == 1):
+                bid_spectra3.append([orderbook.current_timestamp, current_bid_spectrum])
+                ask_spectra3.append([orderbook.current_timestamp, current_ask_spectrum])
             """
             string = str(orderbook.current_timestamp) + '\n'
             string += "Bids spectrum:"
@@ -85,8 +110,7 @@ def process_single_orderlog(path, seccode, tradepath, outputpath):
                 processed_trades.append(order.tradeno)
                 orderbook.collisions -= 1
 
-    spectrum.task3(bid_spectra, ask_spectra, file)
-    #orderbook.task1(file)
+    spectrum.task4(bid_spectra1, ask_spectra1, bid_spectra2, ask_spectra2, bid_spectra3, ask_spectra3, file, day)
     file.close()
     print(f"Finished with reading {path}")
 
@@ -104,35 +128,36 @@ def process_tradelogs(path):
 
 
 if __name__ == '__main__':
-    march_dates = ["01", "02", "05", "06", "07", "09", "12", "13", "14", "15", "16", "19", "20", "21", "22", "23", "26",
-                   "27", "28", "29", "30"]
-    april_dates = ["02", "03", "04", "05", "06", "09", "10", "11", "12", "13", "16", "17", "18", "20", "23", "24",
-                   "25", "26    ", "27","28", "30"]
-    may_dates = ["02", "03", "04", "07", "08", "10", "11", "14", "15", "16", "17", "18", "21", "22", "23", "24",
-                   "25", "28", "29", "30", "31"]
-    seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM","EURUSD000TOD", "EURUSD000TOM"]
+    dates = ["301", "302", "305", "306", "307", "309", "312", "313", "314", "315", "316", "319", "320",
+             "321", "322", "323", "326", "327", "328", "329", "330", "402", "403", "404", "405", "406",
+             "409", "410", "411", "412", "413", "416", "417", "418", "420", "423", "424", "425", "426",
+             "427", "428", "430", "502", "503", "504", "507", "508", "510", "511", "514", "515", "516",
+             "517", "518", "521", "522", "523", "524", "525", "528", "529", "530", "531"]
+    seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM", "EURUSD000TOD", "EURUSD000TOM"]
+    seccodes4 = ["USD000UTSTOM", "EUR_RUB__TOM"]
 
     """
     date = "20180"
-    for i in march_dates:
+    for i in dates:
         for sec in seccodes:
-            curr_date = date+"3"+i
+            curr_date = date+i
             process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
                                     outputpath="output/"+curr_date +sec+".txt" )
-    for i in april_dates:
-        for sec in seccodes:
-            curr_date = date+"4"+i
-            process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
-                                    tradepath="input/TradeLog"+curr_date+".txt",
-                                    outputpath="output/"+curr_date +sec+".txt" )
-    for i in may_dates:
-        for sec in seccodes:
-            curr_date = date+"5"+i
-            process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
-                                    tradepath="input/TradeLog"+curr_date+".txt",
-                                    outputpath="output/"+curr_date +sec+".txt" )
-
     """
-    for sec in seccodes:
-        process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt", outputpath="output/test.txt")
+    # for sec in seccodes4:
+    #     process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt",
+    #                             outputpath="output/test.txt", day=1)
+    date = "20180"
+
+    # TASK 4.1
+    # day = 0
+    # for i in dates:
+    #     for sec in seccodes4:
+    #         curr_date = date + i
+    #         process_single_orderlog(path="input/OrderLog" + curr_date + ".txt",
+    #                                 seccode=sec,
+    #                                 tradepath="input/TradeLog" + curr_date + ".txt",
+    #                                 outputpath="output/" + sec + "task4.txt",
+    #                                 day=day)
+    #     day += 1
