@@ -186,15 +186,12 @@ def process_single_orderlog_task42(path, seccode, tradepath):
 
 
 def process_single_orderlog_task5(path, seccode, tradepath, outputpath):
+
     orderbook = OrderBook(seccode=seccode)
     trades = process_tradelogs(tradepath)
     processed_trades = []
 
-    if orderbook.seccode in ["EUR_RUB__TOD", "EUR_RUB__TOM", "USD000000TOD", "USD000UTSTOM"]:
-        price_step = 0.0025
-    else:
-        price_step = 0.0001
-
+    price_step = 0.0025
     max_band = 10000000
     features = Features(orderbook, max_band, price_step)
 
@@ -314,25 +311,25 @@ if __name__ == '__main__':
 
     process_single_orderlog_task5(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/20180301_EUR_RUB__TOD")
 
-    """
+
     dates = ["301", "302", "305", "306", "307", "309", "312", "313", "314", "315", "316", "319", "320",
              "321", "322", "323", "326", "327", "328", "329", "330", "402", "403", "404", "405", "406",
              "409", "410", "411", "412", "413", "416", "417", "418", "420", "423", "424", "425", "426",
              "427", "428", "430", "502", "503", "504", "507", "508", "510", "511", "514", "515", "516",
              "517", "518", "521", "522", "523", "524", "525", "528", "529", "530", "531"]
-    seccodes = ["USD000000TOD", "USD000UTSTOM", "EUR_RUB__TOD", "EUR_RUB__TOM", "EURUSD000TOD", "EURUSD000TOM"]
-    seccodes4 = ["USD000UTSTOM", "EUR_RUB__TOM"]
-    """
 
-    """
+    seccodes = ["USD000000TOD", 'USD000UTSTOM', "EUR_RUB__TOD", "EUR_RUB__TOM"]
+    # seccodes = ["USD000000TOD", 'USD000UTSTOM', "EUR_RUB__TOD", "EUR_RUB__TOM", "EURUSD000TOD", "EURUSD000TOM"]
+    # seccodes4 = ["USD000UTSTOM", "EUR_RUB__TOM"]
+
     date = "20180"
     for i in dates:
         for sec in seccodes:
             curr_date = date+i
-            process_single_orderlog(path="input/OrderLog"+curr_date+".txt",seccode=sec,
+            process_single_orderlog_task5(path="input/OrderLog"+curr_date+".txt", seccode=sec,
                                     tradepath="input/TradeLog"+curr_date+".txt",
-                                    outputpath="output/"+curr_date +sec+".txt" )
-    """
+                                    outputpath="output/"+curr_date + sec)
+
     # for sec in seccodes4:
     #     process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt",
     #                             outputpath="output/test.txt", day=1)
