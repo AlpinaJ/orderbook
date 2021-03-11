@@ -6,8 +6,9 @@ from Trade import Trade
 from Spectrum import Spectrum
 from Features import Features
 from MyQueue import MyQueue
+import math
 
-BATCH_SIZE = 1000000
+BATCH_SIZE = 100000
 
 
 def read_batch(path, batch_size):
@@ -186,7 +187,6 @@ def process_single_orderlog_task42(path, seccode, tradepath):
 
 
 def process_single_orderlog_task5(path, seccode, tradepath, outputpath):
-
     orderbook = OrderBook(seccode=seccode)
     trades = process_tradelogs(tradepath)
     processed_trades = []
@@ -261,13 +261,15 @@ def process_single_orderlog_task5(path, seccode, tradepath, outputpath):
             orderbook.post(order)
 
             # passive buyer ~ does not cross the bid-ask spread
-            if order.buysell == 'B' and (orderbook.asks.keys().__len__() == 0 or order.price < min(orderbook.asks.keys())):
+            if order.buysell == 'B' and (
+                    orderbook.asks.keys().__len__() == 0 or order.price < min(orderbook.asks.keys())):
                 for q in liquidity_making_queues:
                     if q.side == 'B':
                         q.add(orderbook.current_timestamp, order)
 
             # passive seller ~ does not cross the bid-ask spread
-            if order.buysell == 'S' and (orderbook.bids.keys().__len__() == 0 or order.price > max(orderbook.bids.keys())):
+            if order.buysell == 'S' and (
+                    orderbook.bids.keys().__len__() == 0 or order.price > max(orderbook.bids.keys())):
                 for q in liquidity_making_queues:
                     if q.side == 'S':
                         q.add(orderbook.current_timestamp, order)
@@ -307,28 +309,106 @@ def process_tradelogs(path):
     return trades
 
 
+def process_single_orderlog_task7(path, tradepath, seccode):
+    orderbook = OrderBook(seccode=seccode)
+    trades = defaultdict(Trade)
+    trades = process_tradelogs(tradepath)
+    processed_trades = []
+    midpoints = []
+    timestamps = []
+    last_midpoint = 0
+
+    for order in read_batch(path=path,
+                            batch_size=BATCH_SIZE):
+
+        if order.seccode != seccode:
+            continue
+        if orderbook.current_timestamp < order.time:
+            if order.time >= 235000000000:
+                break
+            flag = 1
+            if not (len(orderbook.asks.keys()) > 0 and len(orderbook.bids.keys()) > 0):
+                flag = 0
+            if flag == 1:
+                current_midpoint = (min(orderbook.asks.keys()) - max(orderbook.bids.keys())) / 2
+                if (current_midpoint != last_midpoint and current_midpoint > 0):
+                    midpoints.append(current_midpoint)
+                    last_midpoint = current_midpoint
+                    timestamps.append(orderbook.current_timestamp)
+                # print(midpoints)
+            orderbook.current_timestamp = order.time
+
+        if order.action == 0:
+            orderbook.revoke(order.orderno, order.buysell)
+        elif order.action == 1:
+            orderbook.post(order)
+        elif order.action == 2:
+            if order.tradeno in processed_trades:
+                continue
+            else:
+                orderbook.match(trades[order.tradeno])
+                processed_trades.append(order.tradeno)
+
+    print(f"Finished with reading {path}")
+
+    return midpoints, timestamps
+
+
+def var(array):
+    result = 0
+    for a in array:
+        result += a * a
+    return math.sqrt(result)
+
+
+def overlap(x1, x2, y1, y2):
+    xmax = max(x1, x2)
+    xmin = min(x1, x2)
+    ymax = max(y1, y2)
+    ymin = min(y1, y2)
+    # b-----a
+    a = min(xmax, ymax)
+    b = max(xmin, ymin)
+    if (a - b) > 0:
+        return 1
+    else:
+        return 0
+
+
+def corr(x, y, timestampsx, timestampsy, lenx, leny):
+    varx = var(x)
+    vary = var(y)
+    result = 0
+    for i in range(1, lenx):
+        for j in range(1, leny):
+            if overlap(timestampsx[i], timestampsx[i - 1], timestampsy[j], timestampsy[j - 1]) == 1:
+                result = result + (x[i] - x[i - 1]) * (y[j] - y[j - 1])
+
+    print(result)
+    result = result / vary / varx
+    return result
+
+
 if __name__ == '__main__':
+    # process_single_orderlog_task5(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/20180301_EUR_RUB__TOD")
 
-    process_single_orderlog_task5(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/20180301_EUR_RUB__TOD")
+    # dates = ["301", "302", "305","306", "307", "309", "312", "313", "314", "315", "316", "319", "320",
+    #          "321", "322", "323", "326", "327", "328", "329", "330", "402", "403", "404", "405", "406",
+    #          "409", "410", "411", "412", "413", "416", "417", "418", "420", "423", "424", "425", "426",
+    #          "427", "428", "430", "502", "503", "504", "507", "508", "510", "511", "514", "515", "516",
+    #          "517", "518", "521", "522", "523", "524", "525", "528", "529", "530", "531"]
 
-
-    dates = ["301", "302", "305", "306", "307", "309", "312", "313", "314", "315", "316", "319", "320",
-             "321", "322", "323", "326", "327", "328", "329", "330", "402", "403", "404", "405", "406",
-             "409", "410", "411", "412", "413", "416", "417", "418", "420", "423", "424", "425", "426",
-             "427", "428", "430", "502", "503", "504", "507", "508", "510", "511", "514", "515", "516",
-             "517", "518", "521", "522", "523", "524", "525", "528", "529", "530", "531"]
-
-    seccodes = ["USD000000TOD", 'USD000UTSTOM', "EUR_RUB__TOD", "EUR_RUB__TOM"]
+    # seccodes = ["USD000000TOD", 'USD000UTSTOM', "EUR_RUB__TOD", "EUR_RUB__TOM"]
     # seccodes = ["USD000000TOD", 'USD000UTSTOM', "EUR_RUB__TOD", "EUR_RUB__TOM", "EURUSD000TOD", "EURUSD000TOM"]
     # seccodes4 = ["USD000UTSTOM", "EUR_RUB__TOM"]
 
-    date = "20180"
-    for i in dates:
-        for sec in seccodes:
-            curr_date = date+i
-            process_single_orderlog_task5(path="input/OrderLog"+curr_date+".txt", seccode=sec,
-                                    tradepath="input/TradeLog"+curr_date+".txt",
-                                    outputpath="output/"+curr_date + sec)
+    # date = "20180"
+    # for i in dates:
+    #     for sec in seccodes:
+    #         curr_date = date+i
+    #         process_single_orderlog_task5(path="input/OrderLog"+curr_date+".txt", seccode=sec,
+    #                                 tradepath="input/TradeLog"+curr_date+".txt",
+    #                                 outputpath="output/"+curr_date + sec)
 
     # for sec in seccodes4:
     #     process_single_orderlog(path="input/OrderLog20180301.txt", seccode=sec, tradepath="input/TradeLog20180301.txt",
@@ -373,4 +453,41 @@ if __name__ == '__main__':
     #         prev_bid_arr = bid_arr
     #         day += 1
 
+    # TASK 7
 
+    orderlog = "input/OrderLog20180301.txt"
+    tradelog = "input/TradeLog20180301.txt"
+    seccode1 = "USD000UTSTOM"
+    seccode2 = "EUR_RUB__TOM"
+    midpoints1, timestamps1 = process_single_orderlog_task7(orderlog, tradelog, seccode1)
+    midpoints2, timestamps2 = process_single_orderlog_task7(orderlog, tradelog, seccode2)
+    file = open("task7", "a")
+
+    mean = 0
+    k = 0
+    # print(midpoints1, " ", midpoints2, "\n")
+    for m in midpoints1:
+        mean = mean + m
+        k = k + 1
+    mean = mean / k
+    i = 0
+    while i < k:
+        midpoints1[i] = midpoints1[i] - mean
+        i = i + 1
+    len1 = k
+
+    mean = 0
+    k = 0
+    for m in midpoints2:
+        mean = mean + m
+        k = k + 1
+    mean = mean / k
+    i = 0
+    while i < k:
+        midpoints2[i] = midpoints2[i] - mean
+        i = i + 1
+    len2 = k
+    # print(len1," ",len2, "\n")
+    #print(midpoints1, " ", midpoints2, "\n")
+    # print(timestamps1, " ", timestamps2, "\n")
+    print(corr(midpoints1, midpoints2, timestamps1, timestamps2, len1, len2))
