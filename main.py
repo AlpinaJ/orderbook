@@ -379,18 +379,20 @@ def corr(x, y, timestampsx, timestampsy, lenx, leny):
     varx = var(x)
     vary = var(y)
     result = 0
+    count = 0
     for i in range(1, lenx):
         for j in range(1, leny):
             if overlap(timestampsx[i], timestampsx[i - 1], timestampsy[j], timestampsy[j - 1]) == 1:
                 result = result + (x[i] - x[i - 1]) * (y[j] - y[j - 1])
+                count =count+ 1
 
-    result = result / vary / varx
+    result = result / vary / varx / count
     return result
 
 
 if __name__ == '__main__':
 
-    orderlog = "input/OrderLog20180301test.txt"
+    orderlog = "input/OrderLog20180301.txt"
     tradelog = "input/TradeLog20180301.txt"
     seccode1 = "USD000UTSTOM"
     seccode2 = "EUR_RUB__TOM"
