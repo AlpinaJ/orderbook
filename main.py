@@ -392,7 +392,7 @@ def corr(x, y, timestampsx, timestampsy, lenx, leny):
 
 if __name__ == '__main__':
 
-    orderlog = "input/OrderLog20180301.txt"
+    orderlog = "input/OrderLog20180301test.txt"
     tradelog = "input/TradeLog20180301.txt"
     seccode1 = "USD000UTSTOM"
     seccode2 = "EUR_RUB__TOM"
@@ -443,7 +443,7 @@ if __name__ == '__main__':
             max_corr_tau = tau
 
     print("Tau: " + str(max_corr_tau))
-    if max_corr_tau > 0:
+    if max_corr > 0:
         print(seccode1 + "is leading")
     else:
         print(seccode2 + "is leading")
