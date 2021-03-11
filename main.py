@@ -31,7 +31,7 @@ def read_batch(path, batch_size):
 
     print(f"No more rows in {path}")
 
-
+"""
 def process_single_orderlog_task4(path, seccode, tradepath, outputpath, day):
     orderbook = OrderBook(seccode=seccode)
     spectrum = Spectrum(orderbook)
@@ -83,7 +83,7 @@ def process_single_orderlog_task4(path, seccode, tradepath, outputpath, day):
             if (flag2 == 1 and flag1 == 1):
                 bid_spectra3.append([orderbook.current_timestamp, current_bid_spectrum])
                 ask_spectra3.append([orderbook.current_timestamp, current_ask_spectrum])
-            """
+
             string = str(orderbook.current_timestamp) + '\n'
             string += "Bids spectrum:"
             for i in range(len(current_bid_spectrum)):
@@ -94,7 +94,8 @@ def process_single_orderlog_task4(path, seccode, tradepath, outputpath, day):
                 string += " " + str(current_ask_spectrum[i])
             string += '\n'
             file.write(string)
-            """
+
+
 
             if order.time >= 235000000000:
                 break
@@ -296,6 +297,7 @@ def process_single_orderlog_task5(path, seccode, tradepath, outputpath):
     features.print_features(outputpath, spectra, bid_ask_spreads, liquidity_taking, liquidity_making, vwaps)
     print(f"Finished with reading {path}")
 
+"""
 
 def process_tradelogs(path):
     trades = defaultdict(Trade)
@@ -375,18 +377,22 @@ def overlap(x1, x2, y1, y2):
         return 0
 
 
-def corr(x, y, timestampsx, timestampsy, lenx, leny):
-    varx = var(x)
-    vary = var(y)
+def corr(varx, vary, x, y, timestampsx, timestampsy, lenx, leny):
     result = 0
     count = 0
     last_checked_timestamp = 1
+    flag = 0
     for i in range(1, lenx):
         for j in range(last_checked_timestamp, leny):
             if overlap(timestampsx[i], timestampsx[i - 1], timestampsy[j], timestampsy[j - 1]) == 1:
                 result = result + (x[i] - x[i - 1]) * (y[j] - y[j - 1])
                 count += 1
                 last_checked_timestamp = j
+                flag = 1
+            else:
+                if flag == 1:
+                    flag = 0
+                    break
 
     result = result / vary / varx / count
     return result
@@ -400,7 +406,7 @@ if __name__ == '__main__':
     seccode2 = "EUR_RUB__TOM"
     midpoints1, timestamps1 = process_single_orderlog_task7(orderlog, tradelog, seccode1)
     midpoints2, timestamps2 = process_single_orderlog_task7(orderlog, tradelog, seccode2)
-    file = open("task7", "a")
+    file = open("task7.txt", "a")
 
     mean = 0
     k = 0
@@ -432,23 +438,25 @@ if __name__ == '__main__':
 
     max_corr = 0
     max_corr_tau = -5000
+    var1 = var(midpoints1)
+    var2 = var(midpoints2)
     for tau in range(-5000, 5001, 100):
         #if tau == 0:
         #    continue
         shifted_timestamps2 = []
         for i in range(len(timestamps2)):
             shifted_timestamps2.append(timestamps2[i] + tau)
-        current_corr = corr(midpoints1, midpoints2, timestamps1, shifted_timestamps2, len1, len2)
-        print(str(tau) + ": " + str(current_corr))
+        current_corr = corr(var1, var2, midpoints1, midpoints2, timestamps1, shifted_timestamps2, len1, len2)
+        file.write(str(tau) + ": " + str(current_corr) + "\n")
         if abs(current_corr) > max_corr:
             max_corr = current_corr
             max_corr_tau = tau
 
-    print("Tau: " + str(max_corr_tau))
+    file.write("Tau: " + str(max_corr_tau) + "\n")
     if max_corr > 0:
-        print(seccode1 + " is leading")
+        file.write(seccode1 + " is leading")
     else:
-        print(seccode2 + " leading")
+        file.write(seccode2 + " leading")
 
     # process_single_orderlog_task5(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/20180301_EUR_RUB__TOD")
 
