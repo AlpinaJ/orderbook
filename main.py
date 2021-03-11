@@ -384,7 +384,6 @@ def corr(x, y, timestampsx, timestampsy, lenx, leny):
             if overlap(timestampsx[i], timestampsx[i - 1], timestampsy[j], timestampsy[j - 1]) == 1:
                 result = result + (x[i] - x[i - 1]) * (y[j] - y[j - 1])
 
-    print(result)
     result = result / vary / varx
     return result
 
