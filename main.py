@@ -389,6 +389,63 @@ def corr(x, y, timestampsx, timestampsy, lenx, leny):
 
 
 if __name__ == '__main__':
+
+    orderlog = "input/OrderLog20180301test.txt"
+    tradelog = "input/TradeLog20180301.txt"
+    seccode1 = "USD000UTSTOM"
+    seccode2 = "EUR_RUB__TOM"
+    midpoints1, timestamps1 = process_single_orderlog_task7(orderlog, tradelog, seccode1)
+    midpoints2, timestamps2 = process_single_orderlog_task7(orderlog, tradelog, seccode2)
+    file = open("task7", "a")
+
+    mean = 0
+    k = 0
+    # print(midpoints1, " ", midpoints2, "\n")
+    for m in midpoints1:
+        mean = mean + m
+        k = k + 1
+    mean = mean / k
+    i = 0
+    while i < k:
+        midpoints1[i] = midpoints1[i] - mean
+        i = i + 1
+    len1 = k
+
+    mean = 0
+    k = 0
+    for m in midpoints2:
+        mean = mean + m
+        k = k + 1
+    mean = mean / k
+    i = 0
+    while i < k:
+        midpoints2[i] = midpoints2[i] - mean
+        i = i + 1
+    len2 = k
+    # print(len1," ",len2, "\n")
+    #print(midpoints1, " ", midpoints2, "\n")
+    # print(timestamps1, " ", timestamps2, "\n")
+
+    max_corr = 0
+    max_corr_tau = -5000
+    for tau in range(-5000, 5001, 100):
+        #if tau == 0:
+        #    continue
+        shifted_timestamps2 = []
+        for i in range(len(timestamps2)):
+            shifted_timestamps2.append(timestamps2[i] + tau)
+        current_corr = corr(midpoints1, midpoints2, timestamps1, shifted_timestamps2, len1, len2)
+        print(str(tau) + ": " + str(current_corr))
+        if abs(current_corr) > max_corr:
+            max_corr = current_corr
+            max_corr_tau = tau
+
+    print("Tau: " + str(max_corr_tau))
+    if max_corr_tau > 0:
+        print(seccode1 + "is leading")
+    else:
+        print(seccode2 + "is leading")
+
     # process_single_orderlog_task5(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/20180301_EUR_RUB__TOD")
 
     # dates = ["301", "302", "305","306", "307", "309", "312", "313", "314", "315", "316", "319", "320",
@@ -453,40 +510,3 @@ if __name__ == '__main__':
     #         day += 1
 
     # TASK 7
-
-    orderlog = "input/OrderLog20180301.txt"
-    tradelog = "input/TradeLog20180301.txt"
-    seccode1 = "USD000UTSTOM"
-    seccode2 = "EUR_RUB__TOM"
-    midpoints1, timestamps1 = process_single_orderlog_task7(orderlog, tradelog, seccode1)
-    midpoints2, timestamps2 = process_single_orderlog_task7(orderlog, tradelog, seccode2)
-    file = open("task7", "a")
-
-    mean = 0
-    k = 0
-    # print(midpoints1, " ", midpoints2, "\n")
-    for m in midpoints1:
-        mean = mean + m
-        k = k + 1
-    mean = mean / k
-    i = 0
-    while i < k:
-        midpoints1[i] = midpoints1[i] - mean
-        i = i + 1
-    len1 = k
-
-    mean = 0
-    k = 0
-    for m in midpoints2:
-        mean = mean + m
-        k = k + 1
-    mean = mean / k
-    i = 0
-    while i < k:
-        midpoints2[i] = midpoints2[i] - mean
-        i = i + 1
-    len2 = k
-    # print(len1," ",len2, "\n")
-    #print(midpoints1, " ", midpoints2, "\n")
-    # print(timestamps1, " ", timestamps2, "\n")
-    print(corr(midpoints1, midpoints2, timestamps1, timestamps2, len1, len2))
