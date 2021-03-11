@@ -379,12 +379,14 @@ def corr(x, y, timestampsx, timestampsy, lenx, leny):
     varx = var(x)
     vary = var(y)
     result = 0
+    count = 0
     for i in range(1, lenx):
         for j in range(1, leny):
             if overlap(timestampsx[i], timestampsx[i - 1], timestampsy[j], timestampsy[j - 1]) == 1:
                 result = result + (x[i] - x[i - 1]) * (y[j] - y[j - 1])
+                count =count+ 1
 
-    result = result / vary / varx
+    result = result / vary / varx / count
     return result
 
 
@@ -487,6 +489,7 @@ if __name__ == '__main__':
         i = i + 1
     len2 = k
     # print(len1," ",len2, "\n")
-    #print(midpoints1, " ", midpoints2, "\n")
+    # print(midpoints1, " ", midpoints2, "\n")
     # print(timestamps1, " ", timestamps2, "\n")
+
     print(corr(midpoints1, midpoints2, timestamps1, timestamps2, len1, len2))
