@@ -380,11 +380,13 @@ def corr(x, y, timestampsx, timestampsy, lenx, leny):
     vary = var(y)
     result = 0
     count = 0
+    last_checked_timestamp = 1
     for i in range(1, lenx):
-        for j in range(1, leny):
+        for j in range(last_checked_timestamp, leny):
             if overlap(timestampsx[i], timestampsx[i - 1], timestampsy[j], timestampsy[j - 1]) == 1:
                 result = result + (x[i] - x[i - 1]) * (y[j] - y[j - 1])
-                count =count+ 1
+                count += 1
+                last_checked_timestamp = j
 
     result = result / vary / varx / count
     return result
@@ -444,9 +446,9 @@ if __name__ == '__main__':
 
     print("Tau: " + str(max_corr_tau))
     if max_corr > 0:
-        print(seccode1 + "is leading")
+        print(seccode1 + " is leading")
     else:
-        print(seccode2 + "is leading")
+        print(seccode2 + " leading")
 
     # process_single_orderlog_task5(path="input/OrderLog20180301.txt", seccode="EUR_RUB__TOD", tradepath="input/TradeLog20180301.txt", outputpath="output/20180301_EUR_RUB__TOD")
 
